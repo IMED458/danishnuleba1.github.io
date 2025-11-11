@@ -12,8 +12,8 @@
       font-family: 'BPG Nino Mtavruli', 'Sylfaen', 'DejaVu Sans', sans-serif;
     }
     .medical-logo {
-      width: 80px;
-      height: 80px;
+      width: 200px;
+      height: 200px;
       margin: 0 auto 16px;
     }
     .ql-editor {
