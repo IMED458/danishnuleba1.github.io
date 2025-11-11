@@ -40,7 +40,7 @@
         <img src="tm_center_logo.png" alt="TM Center Logo" class="w-full h-full object-contain">
       </div>
       <h1 id="clinic-name" class="text-lg font-bold text-gray-800 leading-tight">
-        იმედის სამედიცინო ცენტრი
+        თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
       </h1>
       <h2 id="form-title" class="text-xl font-semibold text-blue-600 mt-4">სამედიცინო დანიშნულება</h2>
     </header>
