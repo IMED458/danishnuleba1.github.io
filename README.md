@@ -2,150 +2,238 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>სამედიცინო დანიშნულების სისტემა</title>
+  <title>სამედიცინო დანიშნულება</title>
   <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body {
-      box-sizing: border-box;
-      font-family: 'BPG Nino Mtavruli', 'Sylfaen', 'DejaVu Sans', sans-serif;
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --gray: #6b7280;
+      --light: #f8fafc;
+      --border: #e2e8f0;
     }
-    .medical-logo {
-      width: 150px;
-      height: 150px;
-      margin: 0 auto 16px;
+    body {
+      font-family: 'Roboto', 'BPG Nino Mtavruli', 'Sylfaen', sans-serif;
+      background: linear-gradient(to bottom, #f1f5f9, #e0e7ff);
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+    .btn {
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-secondary:hover { background: #475569; }
+    .input-group {
+      position: relative;
+    }
+    .input-group label {
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      background: white;
+      padding: 0 4px;
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .input-field {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      transition: border 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    /* Quill Editor - შემცირებული ხაზებს შორის */
+    .ql-toolbar {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border: 2px solid var(--border);
+      border-bottom: none;
+    }
+    .ql-container {
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      border: 2px solid var(--border);
+      border-top: none;
     }
     .ql-editor {
-      min-height: 200px;
+      min-height: 220px;
       font-family: inherit;
+      line-height: 1.35 !important;   /* <-- შემცირებული */
+      padding: 14px 16px;
+      font-size: 15px;
     }
-    .template-item {
-      transition: all 0.2s ease;
-      cursor: pointer;
+
+    .modal {
+      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.4);
     }
-    .template-item:hover {
-      background-color: #f3f4f6;
+    .toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
     }
-    .modal-backdrop {
-      backdrop-filter: blur(4px);
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .template-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.2s;
+    }
+    .template-card:hover {
+      background: #eff6ff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
     }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div class="max-w-4xl mx-auto p-6">
-    <!-- Header -->
-    <header class="text-center mb-8 bg-white rounded-lg shadow-sm p-6">
-      <div class="medical-logo mx-auto mb-4">
-        <img src="tm_center_logo.png" alt="TM Center Logo" class="w-full h-full object-contain">
+<body class="min-h-screen">
+  <div class="max-w-5xl mx-auto p-4 md:p-8">
+    <!-- Header Card -->
+    <div class="card p-6 md:p-8 text-center mb-8">
+      <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg">
+        <img src="tm_center_logo.png" alt="TM Center" class="w-full h-full object-contain">
       </div>
-      <h1 id="clinic-name" class="text-lg font-bold text-gray-800 leading-tight">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
         თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
       </h1>
-      <h2 id="form-title" class="text-xl font-semibold text-blue-600 mt-4">სამედიცინო დანიშნულება</h2>
-    </header>
+      <h2 class="text-xl md:text-2xl font-bold text-blue-600 mt-3 flex items-center justify-center gap-2">
+        <i class="fas fa-file-medical"></i> სამედიცინო დანიშნულება
+      </h2>
+    </div>
 
-    <!-- Main Form -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label for="patient-name" class="block text-sm font-medium text-gray-700 mb-2">პაციენტის სახელი და გვარი</label>
-          <input type="text" id="patient-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="მაგ: ნინო გელაშვილი">
+    <!-- Main Form Card -->
+    <div class="card p-6 md:p-8 mb-6">
+      <form id="prescription-form">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="input-group">
+            <label>პაციენტი</label>
+            <input type="text" id="patient-name" class="input-field w-full" placeholder="ნინო გელაშვილი">
+          </div>
+          <div class="input-group">
+            <label>ისტორიის №</label>
+            <input type="text" id="history-number" class="input-field w-full" placeholder="2024-001234">
+          </div>
+          <div class="input-group">
+            <label>თარიღი</label>
+            <input type="date" id="date" class="input-field w-full">
+          </div>
+          <div class="input-group">
+            <label>ექიმი</label>
+            <input type="text" id="doctor-name" class="input-field w-full" placeholder="ნინო კიკვაძე">
+          </div>
         </div>
-        <div>
-          <label for="history-number" class="block text-sm font-medium text-gray-700 mb-2">ისტორიის ნომერი</label>
-          <input type="text" id="history-number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="მაგ: 2024-001234">
-        </div>
-        <div>
-          <label for="date" class="block text-sm font-medium text-gray-700 mb-2">თარიღი</label>
-          <input type="date" id="date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div>
-          <label for="doctor-name" class="block text-sm font-medium text-gray-700 mb-2">ექიმი</label>
-          <input type="text" id="doctor-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="მაგ: ნინო კიკვაძე">
-        </div>
-      </div>
 
-      <!-- Buttons -->
-      <div class="mb-6 flex justify-between items-center">
-        <button id="open-templates-btn" class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
-          შაბლონები
-        </button>
-        <button id="save-template-btn" class="px-5 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
-          შაბლონის შენახვა
-        </button>
-      </div>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button type="button" id="open-templates-btn" class="btn btn-primary">
+            <i class="fas fa-folder-open"></i> შაბლონები
+          </button>
+          <button type="button" id="save-template-btn" class="btn btn-success">
+            <i class="fas fa-save"></i> შაბლონის შენახვა
+          </button>
+        </div>
 
-      <!-- Editor -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">დანიშნულება</label>
-        <div id="editor" class="bg-white border border-gray-300 rounded-md"></div>
-      </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">დანიშნულება</label>
+          <div id="editor" style="height: 220px;"></div>
+        </div>
 
-      <!-- Action Buttons -->
-      <div class="flex justify-end space-x-4">
-        <button id="clear-btn" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">
-          გასუფთავება
-        </button>
-        <button id="print-btn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-          ბეჭდვა
-        </button>
-      </div>
+        <div class="flex flex-wrap gap-3 justify-end">
+          <button type="button" id="clear-btn" class="btn btn-secondary">
+            <i class="fas fa-trash"></i> გასუფთავება
+          </button>
+          <button type="button" id="print-btn" class="btn btn-primary text-lg font-semibold">
+            <i class="fas fa-print"></i> ბეჭდვა
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- Templates Modal -->
-  <div id="templates-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
-      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-lg font-semibold text-gray-800">შაბლონები</h3>
-        <button id="close-templates-modal" class="text-gray-500 hover:text-gray-700">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
+  <div id="templates-modal" class="fixed inset-0 modal hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-th-large text-blue-600"></i> შაბლონები
+        </h3>
+        <button id="close-templates-modal" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-white transition">
+          <i class="fas fa-times text-xl"></i>
         </button>
       </div>
       <div id="templates-container" class="flex-1 overflow-y-auto p-5">
-        <p id="no-templates" class="text-gray-500 text-center py-8">შაბლონები არ არის შენახული</p>
-        <div id="templates-grid" class="grid grid-cols-1 gap-3"></div>
+        <p id="no-templates" class="text-center text-gray-500 py-12 text-lg">შაბლონები არ არის შენახული</p>
+        <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
       <div class="p-4 border-t border-gray-200 bg-gray-50 text-right">
-        <button id="close-templates-btn" class="px-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-          დახურვა
+        <button id="close-templates-btn" class="btn btn-secondary">
+          <i class="fas fa-times"></i> დახურვა
         </button>
       </div>
     </div>
   </div>
 
   <!-- Save Template Modal -->
-  <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-      <h3 class="text-lg font-medium text-gray-800 mb-4">შაბლონის შენახვა</h3>
-      <input type="text" id="template-name-input" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" placeholder="შაბლონის სახელი">
-      <div class="flex justify-end space-x-3">
-        <button id="cancel-save-template" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">გაუქმება</button>
-        <button id="confirm-save-template" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">შენახვა</button>
+  <div id="save-template-modal" class="fixed inset-0 modal hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-save text-green-600"></i> შაბლონის შენახვა
+      </h3>
+      <div class="input-group mb-5">
+        <label>შაბლონის სახელი</label>
+        <input type="text" id="template-name-input" class="input-field w-full" placeholder="მაგ: ანტიბიოტიკები">
+      </div>
+      <div class="flex justify-end gap-3">
+        <button id="cancel-save-template" class="btn btn-secondary">გაუქმება</button>
+        <button id="confirm-save-template" class="btn btn-success">შენახვა</button>
       </div>
     </div>
   </div>
 
-  <!-- Firebase + Main Script -->
+  <!-- Firebase + Script -->
   <script type="module">
-    // Firebase v9+ Modular SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      getDocs, 
-      deleteDoc, 
-      doc, 
-      query, 
-      orderBy 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // შენი ახალი Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCqNceaV85lJXAHcv7fEUtqYFDWl-g-GAc",
       authDomain: "danishnuleba1.firebaseapp.com",
@@ -160,11 +248,9 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    // Global
     let quill;
     let templates = [];
 
-    // თარიღის ფორმატი: დღე/თვე/წელი
     function formatGeorgianDate(dateString) {
       if (!dateString) return '-';
       const date = new Date(dateString);
@@ -178,15 +264,8 @@
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
       quill = new Quill('#editor', {
         theme: 'snow',
-        modules: {
-          toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline'],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            ['clean']
-          ]
-        },
-        placeholder: 'შეიყვანეთ დანიშნულება...'
+        modules: { toolbar: [['bold', 'italic'], ['link'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] },
+        placeholder: 'დაიწყეთ დანიშნულების აკრეფა...'
       });
       setupEventListeners();
       await loadTemplates();
@@ -201,71 +280,49 @@
       document.getElementById('confirm-save-template').addEventListener('click', saveTemplate);
       document.getElementById('close-templates-modal').addEventListener('click', closeTemplatesModal);
       document.getElementById('close-templates-btn').addEventListener('click', closeTemplatesModal);
-      document.getElementById('templates-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'templates-modal') closeTemplatesModal();
-      });
-      document.getElementById('save-template-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'save-template-modal') hideSaveTemplateModal();
-      });
+      document.getElementById('templates-modal').addEventListener('click', e => e.target.id === 'templates-modal' && closeTemplatesModal());
+      document.getElementById('save-template-modal').addEventListener('click', e => e.target.id === 'save-template-modal' && hideSaveTemplateModal());
     }
 
-    // === Firestore ===
     async function loadTemplates() {
       try {
         const q = query(collection(db, "medical_templates"), orderBy("created_at", "desc"));
-        const querySnapshot = await getDocs(q);
-        templates = [];
-        querySnapshot.forEach((doc) => {
-          templates.push({ id: doc.id, ...doc.data() });
-        });
+        const snapshot = await getDocs(q);
+        templates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTemplatesInModal();
       } catch (error) {
-        showMessage('შაბლონების ჩატვირთვა ვერ მოხერხდა', 'error');
-        console.error("Error loading templates:", error);
+        showToast('შაბლონების ჩატვირთვა ვერ მოხერხდა', 'error');
       }
     }
 
     async function saveTemplate() {
-      console.log("შენახვა დაიწყო...");
       const name = document.getElementById('template-name-input').value.trim();
       const content = quill.root.innerHTML.trim();
-      if (!name) {
-        showMessage('შეიყვანეთ შაბლონის სახელი', 'error');
-        return;
-      }
-      if (!content || content === '<p><br></p>') {
-        showMessage('დანიშნულება ცარიელია', 'error');
+      if (!name || !content || content === '<p><br></p>') {
+        showToast('შეავსეთ სახელი და დანიშნულება', 'error');
         return;
       }
       try {
-        const docRef = await addDoc(collection(db, "medical_templates"), {
-          name: name,
-          content: content,
-          created_at: new Date().toISOString()
-        });
-        console.log("შაბლონი შეინახა ID-ით:", docRef.id);
+        await addDoc(collection(db, "medical_templates"), { name, content, created_at: new Date().toISOString() });
         hideSaveTemplateModal();
         await loadTemplates();
-        showMessage('შაბლონი შეინახა', 'success');
+        showToast('შაბლონი შეინახა!', 'success');
       } catch (error) {
-        console.error("Error saving template:", error);
-        showMessage('შენახვა ვერ მოხერხდა: ' + error.message, 'error');
+        showToast('შენახვა ვერ მოხერხდა', 'error');
       }
     }
 
     async function deleteTemplate(id) {
-      if (!confirm('ნამდვილად გსურთ წაშლა?')) return;
+      if (!confirm('წაშლა?')) return;
       try {
         await deleteDoc(doc(db, "medical_templates", id));
         await loadTemplates();
-        showMessage('შაბლონი წაიშალა', 'success');
+        showToast('შაბლონი წაიშალა', 'success');
       } catch (error) {
-        showMessage('წაშლა ვერ მოხერხდა', 'error');
-        console.error("Error deleting:", error);
+        showToast('წაშლა ვერ მოხერხდა', 'error');
       }
     }
 
-    // === Modals ===
     function openTemplatesModal() {
       renderTemplatesInModal();
       const modal = document.getElementById('templates-modal');
@@ -281,14 +338,10 @@
 
     function showSaveTemplateModal() {
       const content = quill.root.innerHTML.trim();
-      if (!content || content === '<p><br></p>') {
-        showMessage('დანიშნულების ველი ცარიელია', 'error');
-        return;
-      }
+      if (!content || content === '<p><br></p>') return showToast('დანიშნულება ცარიელია', 'error');
       const modal = document.getElementById('save-template-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      document.getElementById('template-name-input').value = '';
       document.getElementById('template-name-input').focus();
     }
 
@@ -309,99 +362,85 @@
       }
       noTemplates.classList.add('hidden');
       templates.forEach(t => {
-        const item = document.createElement('div');
-        item.className = 'template-item bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
-        item.innerHTML = `
-          <div>
-            <h4 class="font-medium text-gray-800">${escapeHtml(t.name)}</h4>
-            <p class="text-xs text-gray-500">${formatGeorgianDate(t.created_at)}</p>
-          </div>
-          <div class="flex space-x-2">
-            <button class="load-template text-blue-600 hover:text-blue-800 text-sm font-medium">ჩატვირთვა</button>
-            <button class="delete-template text-red-600 hover:text-red-800 text-sm font-medium">წაშლა</button>
+        const card = document.createElement('div');
+        card.className = 'template-card p-4';
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-800">${escapeHtml(t.name)}</h4>
+              <p class="text-xs text-gray-500 mt-1">${formatGeorgianDate(t.created_at)}</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">ჩატვირთვა</button>
+              <button class="text-red-600 hover:text-red-800 font-medium text-sm">წაშლა</button>
+            </div>
           </div>
         `;
-        item.querySelector('.load-template').onclick = () => {
+        card.querySelector('.text-blue-600').onclick = () => {
           quill.root.innerHTML = t.content;
           closeTemplatesModal();
-          showMessage('შაბლონი ჩაიტვირთა', 'success');
+          showToast('შაბლონი ჩაიტვირთა', 'success');
         };
-        item.querySelector('.delete-template').onclick = () => deleteTemplate(t.id);
-        grid.appendChild(item);
+        card.querySelector('.text-red-600').onclick = () => deleteTemplate(t.id);
+        grid.appendChild(card);
       });
     }
 
-    // === Other ===
     function handleClear() {
-      document.getElementById('patient-name').value = '';
-      document.getElementById('history-number').value = '';
+      ['patient-name', 'history-number', 'doctor-name'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      document.getElementById('doctor-name').value = '';
       quill.setContents([]);
     }
 
     function handlePrint() {
-      const patientName = document.getElementById('patient-name').value || '-';
-      const historyNumber = document.getElementById('history-number').value || '-';
-      const dateInput = document.getElementById('date').value;
-      const date = dateInput ? formatGeorgianDate(dateInput) : '-';
-      const doctor = document.getElementById('doctor-name').value || '-';
-      const prescription = quill.root.innerHTML || '<p>-</p>';
-      const clinicName = document.getElementById('clinic-name').textContent;
-      const formTitle = document.getElementById('form-title').textContent;
+      const data = {
+        patient: document.getElementById('patient-name').value || '-',
+        history: document.getElementById('history-number').value || '-',
+        date: document.getElementById('date').value ? formatGeorgianDate(document.getElementById('date').value) : '-',
+        doctor: document.getElementById('doctor-name').value || '-',
+        content: quill.root.innerHTML || '<p>-</p>'
+      };
 
-      const printContent = `
+      const printWin = window.open('', '_blank');
+      printWin.document.write(`
         <!DOCTYPE html>
-        <html lang="ka">
-        <head>
-          <meta charset="UTF-8">
-          <title>დანიშნულება</title>
-          <style>
-            body { font-family: 'BPG Nino Mtavruli', 'Sylfaen', sans-serif; margin: 0; padding: 20px; font-size: 12pt; line-height: 1.5; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-            .logo { width: 120px; height: 120px; margin: 0 auto 10px; object-fit: contain; }
-            .field { margin: 12px 0; }
-            .label { font-weight: bold; display: inline-block; width: 120px; }
-            .prescription { border: 1px solid #000; padding: 15px; margin: 20px 0; min-height: 180px; }
-            .signature { margin-top: 50px; text-align: right; }
-            @media print { body { margin: 0; } }
-          </style>
-        </head>
-        <body>
+        <html><head><meta charset="UTF-8"><title>დანიშნულება</title>
+        <style>
+          body { font-family: 'BPG Nino Mtavruli', sans-serif; margin: 2cm; font-size: 12pt; line-height: 1.35; }
+          .header { text-align: center; border-bottom: 3px double #000; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+          .logo { width: 100px; height: 100px; object-fit: contain; }
+          .print-field { display: flex; gap: 1rem; margin: 0.75rem 0; }
+          .label { font-weight: bold; width: 120px; }
+          .prescription { border: 1px solid #000; padding: 1rem; min-height: 200px; margin: 1.5rem 0; line-height: 1.35; }
+          .signature { margin-top: 3rem; text-align: right; }
+          @media print { body { margin: 1cm; } }
+        </style>
+        </head><body>
           <div class="header">
-            <img src="tm_center_logo.png" class="logo" alt="TM Center Logo">
-            <h1 style="font-size: 14pt; margin: 8px 0;">${clinicName}</h1>
-            <h2 style="font-size: 16pt; font-weight: bold; margin: 5px 0;">${formTitle}</h2>
+            <img src="tm_center_logo.png" class="logo" alt="Logo">
+            <h1 style="font-size:14pt;margin:0.5rem 0;">თბილისის სახელმწიფო სამედიცინო უნივერსიტეტის კლინიკა</h1>
+            <h2 style="font-size:16pt;margin:0.5rem 0;font-weight:bold;">სამედიცინო დანიშნულება</h2>
           </div>
-          <div class="field"><span class="label">პაციენტი:</span> ${patientName}</div>
-          <div class="field"><span class="label">ისტორიის №:</span> ${historyNumber}</div>
-          <div class="field"><span class="label">თარიღი:</span> ${date}</div>
-          <div class="prescription">${prescription}</div>
+          <div class="print-field"><span class="label">პაციენტი:</span> ${data.patient}</div>
+          <div class="print-field"><span class="label">ისტორია №:</span> ${data.history}</div>
+          <div class="print-field"><span class="label">თარიღი:</span> ${data.date}</div>
+          <div class="prescription">${data.content}</div>
           <div class="signature">
-            <p><strong>ექიმი:</strong> ${doctor}</p>
-            <p style="margin-top: 25px;">ხელმოწერა: _________________</p>
+            <p><strong>ექიმი:</strong> ${data.doctor}</p>
+            <p style="margin-top:2rem;">ხელმოწერა: _________________</p>
           </div>
-        </body>
-        </html>
-      `;
-
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.write(printContent);
-        win.document.close();
-        win.focus();
-        setTimeout(() => win.print(), 500);
-      } else {
-        showMessage('ბეჭდვის ფანჯარა ვერ გაიხსნა', 'error');
-      }
+        </body></html>
+      `);
+      printWin.document.close();
+      setTimeout(() => printWin.print(), 500);
     }
 
-    function showMessage(msg, type = 'success') {
-      const el = document.createElement('div');
-      el.className = `fixed top-4 right-4 px-4 py-2 rounded-md text-white z-50 shadow-lg ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
-      el.textContent = msg;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 3000);
+    function showToast(msg, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast px-5 py-3 rounded-lg text-white font-medium shadow-lg flex items-center gap-2 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+      toast.innerHTML = `${type === 'error' ? '<i class="fas fa-times-circle"></i>' : '<i class="fas fa-check-circle"></i>'} ${msg}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     }
 
     function escapeHtml(text) {
