@@ -2,6 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>სამედიცინო დანიშნულება</title>
   <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -72,7 +73,7 @@
       box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
 
-    /* Quill Editor - შემცირებული ხაზებს შორის */
+    /* Quill Editor */
     .ql-toolbar {
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
@@ -302,7 +303,7 @@
       try {
         const q = query(collection(db, "medical_templates"), orderBy("created_at", "desc"));
         const snapshot = await getDocs(q);
-        templates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        templates = snapshot.docs.map(doc => ({ id: doc853.id, ...doc.data() }));
         renderTemplatesInModal();
       } catch (error) {
         showToast('შაბლონების ჩატვირთვა ვერ მოხერხდა', 'error');
@@ -406,7 +407,7 @@
       quill.setContents([]);
     }
 
-    // === ბეჭდვა – ლოგო დიდი ===
+    // === ბეჭდვა – პატარა ლოგო, მხოლოდ კლინიკის სახელი, ზემოთ აწეული ===
     function handlePrint() {
       const data = {
         patient: document.getElementById('patient-name').value || '-',
@@ -418,74 +419,76 @@
 
       const printWin = window.open('', '_blank');
       printWin.document.write(`
-        <!DOCTYPE html>
+        <!doctype html>
         <html>
         <head>
           <meta charset="UTF-8">
           <title>დანიშნულება</title>
           <style>
+            @page { margin: 1.5cm 1.5cm 2cm 1.5cm; }
             body { 
               font-family: 'BPG Nino Mtavruli', sans-serif; 
-              margin: 2cm; 
               font-size: 12pt; 
               line-height: 1.35; 
+              margin: 0;
             }
-            .header { 
-              text-align: center; 
-              border-bottom: 3px double #000; 
-              padding-bottom: 1.5rem; 
-              margin-bottom: 1.8rem; 
+            .header {
+              text-align: center;
+              margin-top: -1cm; /* მაქსიმალურად ზემოთ */
+              padding-bottom: 0.5rem;
+              border-bottom: 2px solid #000;
             }
-            .logo { 
-              width: 220px; 
-              height: 150px; 
-              object-fit: contain; 
-              margin-bottom: 0.8rem;
-              border: 1px solid #ccc; 
-              border-radius: 8px;
-              padding: 8px;
+            .logo {
+              width: 150px;
+              height: 100px;
+              object-fit: contain;
+              margin-bottom: 0.3rem;
+              border: 1px solid #ccc;
+              border-radius: 6px;
+              padding: 6px;
               background: white;
             }
-            .print-field { 
-              display: flex; 
-              gap: 1rem; 
-              margin: 0.8rem 0; 
-              font-size: 13pt;
+            .clinic-name {
+              font-size: 12pt;
+              font-weight: bold;
+              margin: 0.2rem 0;
             }
-            .label { 
-              font-weight: bold; 
-              width: 130px; 
+            .print-field {
+              display: flex;
+              gap: 1rem;
+              margin: 0.8rem 0;
+              font-size: 12pt;
+            }
+            .label {
+              font-weight: bold;
+              width: 120px;
               flex-shrink: 0;
             }
-            .prescription { 
-              border: 1.5px solid #000; 
-              padding: 1.2rem; 
-              min-height: 220px; 
-              margin: 1.8rem 0; 
-              line-height: 1.35; 
-              font-size: 12.5pt;
+            .prescription {
+              border: 1.5px solid #000;
+              padding: 1rem;
+              min-height: 200px;
+              margin: 1.5rem 0;
+              line-height: 1.35;
+              font-size: 12pt;
               background: #fafafa;
             }
-            .signature { 
-              margin-top: 4rem; 
-              text-align: right; 
-              font-size: 13pt;
+            .signature {
+              margin-top: 3rem;
+              text-align: right;
+              font-size: 12pt;
             }
-            @media print { 
-              body { margin: 1.2cm; } 
-              .logo { width: 200px; height: 135px; }
+            @media print {
+              .header { margin-top: -0.8cm; }
             }
           </style>
         </head>
         <body>
           <div class="header">
             <img src="tm_center_logo.png" class="logo" alt="Logo">
-            <h1 style="font-size:15pt;margin:0.6rem 0;font-weight:bold;">
+            <div class="clinic-name">
               თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
-            </h1>
-            <h2 style="font-size:17pt;margin:0.6rem 0;font-weight:bold;color:#1d4ed8;">
-              სამედიცინო დანიშნულება
-            </h2>
+            </div>
           </div>
           <div class="print-field"><span class="label">პაციენტი:</span> ${data.patient}</div>
           <div class="print-field"><span class="label">ისტორია №:</span> ${data.history}</div>
@@ -493,7 +496,7 @@
           <div class="prescription">${data.content}</div>
           <div class="signature">
             <p><strong>ექიმი:</strong> ${data.doctor}</p>
-            <p style="margin-top:2.5rem;border-top:1px solid #000;padding-top:0.5rem;display:inline-block;">
+            <p style="margin-top:2rem;border-top:1px solid #000;padding-top:0.5rem;display:inline-block;">
               ხელმოწერა: _________________
             </p>
           </div>
