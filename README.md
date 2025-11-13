@@ -135,7 +135,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
+   824}
     .logo-container img {
       max-width: 88%;
       max-height: 88%;
@@ -246,7 +246,7 @@
     </div>
   </div>
 
-  <!-- Firebase + Script -->
+  <!-- Firebase + Script (ავტორიზაცია ამოღებულია) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -303,7 +303,7 @@
       try {
         const q = query(collection(db, "medical_templates"), orderBy("created_at", "desc"));
         const snapshot = await getDocs(q);
-        templates = snapshot.docs.map(doc => ({ id: doc853.id, ...doc.data() }));
+        templates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTemplatesInModal();
       } catch (error) {
         showToast('შაბლონების ჩატვირთვა ვერ მოხერხდა', 'error');
@@ -407,7 +407,6 @@
       quill.setContents([]);
     }
 
-    // === ბეჭდვა – პატარა ლოგო, მხოლოდ კლინიკის სახელი, ზემოთ აწეული ===
     function handlePrint() {
       const data = {
         patient: document.getElementById('patient-name').value || '-',
@@ -434,7 +433,7 @@
             }
             .header {
               text-align: center;
-              margin-top: -1cm; /* მაქსიმალურად ზემოთ */
+              margin-top: -1cm;
               padding-bottom: 0.5rem;
               border-bottom: 2px solid #000;
             }
@@ -477,9 +476,6 @@
               margin-top: 3rem;
               text-align: right;
               font-size: 12pt;
-            }
-            @media print {
-              .header { margin-top: -0.8cm; }
             }
           </style>
         </head>
