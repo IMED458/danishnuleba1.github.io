@@ -12,8 +12,8 @@
       font-family: 'BPG Nino Mtavruli', 'Sylfaen', 'DejaVu Sans', sans-serif;
     }
     .medical-logo {
-      width: 100px;
-      height: 100px;
+      width: 150px;
+      height: 150px;
       margin: 0 auto 16px;
     }
     .ql-editor {
@@ -129,15 +129,44 @@
     </div>
   </div>
 
-  <script>
+  <!-- Firebase + Main Script -->
+  <script type="module">
+    // Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAH2CvRxLYqd3KGAsRoTvzCTH4x8bZNnl0",
+      authDomain: "doctor-calendar-db.firebaseapp.com",
+      databaseURL: "https://doctor-calendar-db-default-rtdb.firebaseio.com",
+      projectId: "doctor-calendar-db",
+      storageBucket: "doctor-calendar-db.firebasestorage.app",
+      messagingSenderId: "1085600886719",
+      appId: "1:1085600886719:web:568c604d46a72bed443b0a",
+      measurementId: "G-HGNRZVEEKW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
     // Global
     let quill;
-    const STORAGE_KEY = 'medical_templates_tmcenter';
-    let templates = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let templates = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // თარიღის ფორმატი: დღე/თვე/წელი
+    function formatGeorgianDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
-
       quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
@@ -150,8 +179,8 @@
         },
         placeholder: 'შეიყვანეთ დანიშნულება...'
       });
-
       setupEventListeners();
+      await loadTemplates();
     });
 
     function setupEventListeners() {
@@ -159,10 +188,8 @@
       document.getElementById('clear-btn').addEventListener('click', handleClear);
       document.getElementById('save-template-btn').addEventListener('click', showSaveTemplateModal);
       document.getElementById('open-templates-btn').addEventListener('click', openTemplatesModal);
-
       document.getElementById('cancel-save-template').addEventListener('click', hideSaveTemplateModal);
       document.getElementById('confirm-save-template').addEventListener('click', saveTemplate);
-
       document.getElementById('close-templates-modal').addEventListener('click', closeTemplatesModal);
       document.getElementById('close-templates-btn').addEventListener('click', closeTemplatesModal);
       document.getElementById('templates-modal').addEventListener('click', (e) => {
@@ -171,6 +198,62 @@
       document.getElementById('save-template-modal').addEventListener('click', (e) => {
         if (e.target.id === 'save-template-modal') hideSaveTemplateModal();
       });
+    }
+
+    // === Firestore ===
+    async function loadTemplates() {
+      try {
+        const q = query(collection(db, "medical_templates"), orderBy("created_at", "desc"));
+        const querySnapshot = await getDocs(q);
+        templates = [];
+        querySnapshot.forEach((doc) => {
+          templates.push({ id: doc.id, ...doc.data() });
+        });
+        renderTemplatesInModal();
+      } catch (error) {
+        showMessage('შაბლონების ჩატვირთვა ვერ მოხერხდა', 'error');
+        console.error("Error loading templates:", error);
+      }
+    }
+
+    async function saveTemplate() {
+      const name = document.getElementById('template-name-input').value.trim();
+      const content = quill.root.innerHTML.trim();
+
+      if (!name) {
+        showMessage('შეიყვანეთ შაბლონის სახელი', 'error');
+        return;
+      }
+      if (!content || content === '<p><br></p>') {
+        showMessage('დანიშნულება ცარიელია', 'error');
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "medical_templates"), {
+          name: name,
+          content: content,
+          created_at: new Date().toISOString()
+        });
+        hideSaveTemplateModal();
+        await loadTemplates();
+        showMessage('შაბლონი შეინახა', 'success');
+      } catch (error) {
+        showMessage('შენახვა ვერ მოხერხდა', 'error');
+        console.error("Error saving template:", error);
+      }
+    }
+
+    async function deleteTemplate(id) {
+      if (!confirm('ნამდვილად გსურთ წაშლა?')) return;
+      try {
+        await deleteDoc(doc(db, "medical_templates", id));
+        await loadTemplates();
+        showMessage('შაბლონი წაიშალა', 'success');
+      } catch (error) {
+        showMessage('წაშლა ვერ მოხერხდა', 'error');
+        console.error("Error deleting:", error);
+      }
     }
 
     // === Templates Modal ===
@@ -202,42 +285,24 @@
         item.innerHTML = `
           <div>
             <h4 class="font-medium text-gray-800">${escapeHtml(t.name)}</h4>
-            <p class="text-xs text-gray-500">${new Date(t.created_at).toLocaleDateString('ka-GE')}</p>
+            <p class="text-xs text-gray-500">${formatGeorgianDate(t.created_at)}</p>
           </div>
           <div class="flex space-x-2">
-            <button class="load-template text-blue-600 hover:text-blue-800 text-sm font-medium" data-id="${t.id}">ჩატვირთვა</button>
-            <button class="delete-template text-red-600 hover:text-red-800 text-sm font-medium" data-id="${t.id}">წაშლა</button>
+            <button class="load-template text-blue-600 hover:text-blue-800 text-sm font-medium">ჩატვირთვა</button>
+            <button class="delete-template text-red-600 hover:text-red-800 text-sm font-medium">წაშლა</button>
           </div>
         `;
-
-        item.querySelector('.load-template').addEventListener('click', () => {
-          loadTemplate(t);
+        item.querySelector('.load-template').onclick = () => {
+          quill.root.innerHTML = t.content;
           closeTemplatesModal();
           showMessage('შაბლონი ჩაიტვირთა', 'success');
-        });
-
-        item.querySelector('.delete-template').addEventListener('click', () => {
-          if (confirm(`ნამდვილად გსურთ შაბლონის წაშლა: "${t.name}"?`)) {
-            deleteTemplate(t.id);
-            renderTemplatesInModal();
-            showMessage('შაბლონი წაიშალა', 'success');
-          }
-        });
-
+        };
+        item.querySelector('.delete-template').onclick = () => deleteTemplate(t.id);
         grid.appendChild(item);
       });
     }
 
-    function loadTemplate(template) {
-      quill.root.innerHTML = template.content;
-    }
-
-    function deleteTemplate(id) {
-      templates = templates.filter(t => t.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-    }
-
-    // === Save Template ===
+    // === Save Template Modal ===
     function showSaveTemplateModal() {
       const content = quill.root.innerHTML.trim();
       if (!content || content === '<p><br></p>') {
@@ -255,30 +320,6 @@
       document.getElementById('template-name-input').value = '';
     }
 
-    function saveTemplate() {
-      const name = document.getElementById('template-name-input').value.trim();
-      if (!name) {
-        showMessage('შეიყვანეთ შაბლონის სახელი', 'error');
-        return;
-      }
-      if (templates.length >= 999) {
-        showMessage('მაქსიმალური რაოდენობა (999)', 'error');
-        return;
-      }
-
-      const newTemplate = {
-        id: Date.now().toString(),
-        name: name,
-        content: quill.root.innerHTML,
-        created_at: new Date().toISOString()
-      };
-
-      templates.push(newTemplate);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
-      hideSaveTemplateModal();
-      showMessage('შაბლონი შეინახა', 'success');
-    }
-
     // === Other ===
     function handleClear() {
       document.getElementById('patient-name').value = '';
@@ -291,7 +332,8 @@
     function handlePrint() {
       const patientName = document.getElementById('patient-name').value || '-';
       const historyNumber = document.getElementById('history-number').value || '-';
-      const date = document.getElementById('date').value ? new Date(document.getElementById('date').value).toLocaleDateString('ka-GE') : '-';
+      const dateInput = document.getElementById('date').value;
+      const date = dateInput ? formatGeorgianDate(dateInput) : '-';
       const doctor = document.getElementById('doctor-name').value || '-';
       const prescription = quill.root.innerHTML || '<p>-</p>';
       const clinicName = document.getElementById('clinic-name').textContent;
@@ -306,7 +348,7 @@
           <style>
             body { font-family: 'BPG Nino Mtavruli', 'Sylfaen', sans-serif; margin: 0; padding: 20px; font-size: 12pt; line-height: 1.5; }
             .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-            .logo { width: 80px; height: 80px; margin: 0 auto 10px; object-fit: contain; }
+            .logo { width: 120px; height: 120px; margin: 0 auto 10px; object-fit: contain; }
             .field { margin: 12px 0; }
             .label { font-weight: bold; display: inline-block; width: 120px; }
             .prescription { border: 1px solid #000; padding: 15px; margin: 20px 0; min-height: 180px; }
