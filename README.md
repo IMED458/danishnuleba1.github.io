@@ -156,7 +156,7 @@
         თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
       </h1>
       <h2 class="text-xl md:text-2xl font-bold text-blue-600 mt-3 flex items-center justify-center gap-2">
-        <i class="fas fa-file-medical"></i> სამედიცინო დანიშნულება
+        სამედიცინო დანიშნულება
       </h2>
     </div>
 
@@ -184,10 +184,10 @@
 
         <div class="flex flex-wrap gap-3 mb-6">
           <button type="button" id="open-templates-btn" class="btn btn-primary">
-            <i class="fas fa-folder-open"></i> შაბლონები
+            შაბლონები
           </button>
           <button type="button" id="save-template-btn" class="btn btn-success">
-            <i class="fas fa-save"></i> შაბლონის შენახვა
+            შაბლონის შენახვა
           </button>
         </div>
 
@@ -198,10 +198,10 @@
 
         <div class="flex flex-wrap gap-3 justify-end">
           <button type="button" id="clear-btn" class="btn btn-secondary">
-            <i class="fas fa-trash"></i> გასუფთავება
+            გასუფთავება
           </button>
           <button type="button" id="print-btn" class="btn btn-primary text-lg font-semibold">
-            <i class="fas fa-print"></i> ბეჭდვა
+            ბეჭდვა
           </button>
         </div>
       </form>
@@ -213,7 +213,7 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
       <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
         <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-          <i class="fas fa-th-large text-blue-600"></i> შაბლონები
+          შაბლონები
         </h3>
         <button id="close-templates-modal" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-white transition">
           <i class="fas fa-times text-xl"></i>
@@ -225,7 +225,7 @@
       </div>
       <div class="p-4 border-t border-gray-200 bg-gray-50 text-right">
         <button id="close-templates-btn" class="btn btn-secondary">
-          <i class="fas fa-times"></i> დახურვა
+          დახურვა
         </button>
       </div>
     </div>
@@ -235,7 +235,7 @@
   <div id="save-template-modal" class="fixed inset-0 modal hidden items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
       <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <i class="fas fa-save text-green-600"></i> შაბლონის შენახვა
+        შაბლონის შენახვა
       </h3>
       <div class="input-group mb-5">
         <label>შაბლონის სახელი</label>
@@ -412,11 +412,12 @@
       quill.setContents([]);
     }
 
+    // === განახლებული ბეჭდვის ფუნქცია – ლოგო დიდი ===
     function handlePrint() {
       const data = {
         patient: document.getElementById('patient-name').value || '-',
         history: document.getElementById('history-number').value || '-',
-        date: document.getElementById('date').value ? formatGeorgianDate(document.getElementById('date').value) : '-',
+        date: document.getElementById('date').value ? formatGeorgianDate(document.getElementById('date').value входят: '-',
         doctor: document.getElementById('doctor-name').value || '-',
         content: quill.root.innerHTML || '<p>-</p>'
       };
@@ -424,22 +425,76 @@
       const printWin = window.open('', '_blank');
       printWin.document.write(`
         <!DOCTYPE html>
-        <html><head><meta charset="UTF-8"><title>დანიშნულება</title>
-        <style>
-          body { font-family: 'BPG Nino Mtavruli', sans-serif; margin: 2cm; font-size: 12pt; line-height: 1.35; }
-          .header { text-align: center; border-bottom: 3px double #000; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-          .logo { width: 100px; height: 100px; object-fit: contain; }
-          .print-field { display: flex; gap: 1rem; margin: 0.75rem 0; }
-          .label { font-weight: bold; width: 120px; }
-          .prescription { border: 1px solid #000; padding: 1rem; min-height: 200px; margin: 1.5rem 0; line-height: 1.35; }
-          .signature { margin-top: 3rem; text-align: right; }
-          @media print { body { margin: 1cm; } }
-        </style>
-        </head><body>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>დანიშნულება</title>
+          <style>
+            body { 
+              font-family: 'BPG Nino Mtavruli', sans-serif; 
+              margin: 2cm; 
+              font-size: 12pt; 
+              line-height: 1.35; 
+            }
+            .header { 
+              text-align: center; 
+              border-bottom: 3px double #000; 
+              padding-bottom: 1.5rem; 
+              margin-bottom: 1.8rem; 
+            }
+            .logo { 
+              width: 220px;      /* დიდი ლოგო ბეჭდვაში */
+              height: 150px; 
+              object-fit: contain; 
+              margin-bottom: 0.8rem;
+              border: 1px solid #ccc; 
+              border-radius: 8px;
+              padding: 8px;
+              background: white;
+            }
+            .print-field { 
+              display: flex; 
+              gap: 1rem; 
+              margin: 0.8rem 0; 
+              font-size: 13pt;
+            }
+            .label { 
+              font-weight: bold; 
+              width: 130px; 
+              flex-shrink: 0;
+            }
+            .prescription { 
+              border: 1.5px solid #000; 
+              padding: 1.2rem; 
+              min-height: 220px; 
+              margin: 1.8rem 0; 
+              line-height: 1.35; 
+              font-size: 12.5pt;
+              background: #fafafa;
+            }
+            .signature { 
+              margin-top: 4rem; 
+              text-align: right; 
+              font-size: 13pt;
+            }
+            @media print { 
+              body { margin: 1.2cm; } 
+              .logo { 
+                width: 200px; 
+                height: 135px; 
+              }
+            }
+          </style>
+        </head>
+        <body>
           <div class="header">
-            <img src="tm_center_logo.png" class="logo" alt="Logo">
-            <h1 style="font-size:14pt;margin:0.5rem 0;">თბილისის სახელმწიფო სამედიცინო უნივერსიტეტის კლინიკა</h1>
-            <h2 style="font-size:16pt;margin:0.5rem 0;font-weight:bold;">სამედიცინო დანიშნულება</h2>
+            <img src="tm_center_logo.png" class="logo" alt="TM Center Logo">
+            <h1 style="font-size:15pt;margin:0.6rem 0;font-weight:bold;">
+              თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
+            </h1>
+            <h2 style="font-size:17pt;margin:0.6rem 0;font-weight:bold;color:#1d4ed8;">
+              სამედიცინო დანიშნულება
+            </h2>
           </div>
           <div class="print-field"><span class="label">პაციენტი:</span> ${data.patient}</div>
           <div class="print-field"><span class="label">ისტორია №:</span> ${data.history}</div>
@@ -447,12 +502,15 @@
           <div class="prescription">${data.content}</div>
           <div class="signature">
             <p><strong>ექიმი:</strong> ${data.doctor}</p>
-            <p style="margin-top:2rem;">ხელმოწერა: _________________</p>
+            <p style="margin-top:2.5rem;border-top:1px solid #000;padding-top:0.5rem;display:inline-block;">
+              ხელმოწერა: _________________
+            </p>
           </div>
-        </body></html>
+        </body>
+        </html>
       `);
       printWin.document.close();
-      setTimeout(() => printWin.print(), 500);
+      setTimeout(() => printWin.print(), 600);
     }
 
     function showToast(msg, type = 'success') {
