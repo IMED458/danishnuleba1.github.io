@@ -91,7 +91,7 @@
     .ql-editor {
       min-height: 220px;
       font-family: inherit;
-      line-height: 1.35 !important;   /* <-- შემცირებული */
+      line-height: 1.35 !important;
       padding: 14px 16px;
       font-size: 15px;
     }
@@ -123,14 +123,34 @@
       border-color: var(--primary);
       transform: translateY(-2px);
     }
+
+    /* ლოგო – მართკუთხედი, გაზრდილი */
+    .logo-container {
+      width: 12rem;     /* 192px */
+      height: 8rem;     /* 128px */
+      margin: 0 auto 1.5rem;
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 4px solid #dbeafe;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-container img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body class="min-h-screen">
   <div class="max-w-5xl mx-auto p-4 md:p-8">
     <!-- Header Card -->
     <div class="card p-6 md:p-8 text-center mb-8">
-      <div class="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg">
-        <img src="tm_center_logo.png" alt="TM Center" class="w-full h-full object-contain">
+      <div class="logo-container">
+        <img src="tm_center_logo.png" alt="TM Center">
       </div>
       <h1 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
         თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
