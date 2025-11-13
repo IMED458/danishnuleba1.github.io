@@ -131,20 +131,29 @@
 
   <!-- Firebase + Main Script -->
   <script type="module">
-    // Firebase SDKs
+    // Firebase v9+ Modular SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      deleteDoc, 
+      doc, 
+      query, 
+      orderBy 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // შენი ახალი Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyAH2CvRxLYqd3KGAsRoTvzCTH4x8bZNnl0",
-      authDomain: "doctor-calendar-db.firebaseapp.com",
-      databaseURL: "https://doctor-calendar-db-default-rtdb.firebaseio.com",
-      projectId: "doctor-calendar-db",
-      storageBucket: "doctor-calendar-db.firebasestorage.app",
-      messagingSenderId: "1085600886719",
-      appId: "1:1085600886719:web:568c604d46a72bed443b0a",
-      measurementId: "G-HGNRZVEEKW"
+      apiKey: "AIzaSyCqNceaV85lJXAHcv7fEUtqYFDWl-g-GAc",
+      authDomain: "danishnuleba1.firebaseapp.com",
+      projectId: "danishnuleba1",
+      storageBucket: "danishnuleba1.firebasestorage.app",
+      messagingSenderId: "439396384140",
+      appId: "1:439396384140:web:a2c6327fb5e3f3035daaa9",
+      measurementId: "G-2PKPFKJLKQ"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -217,9 +226,9 @@
     }
 
     async function saveTemplate() {
+      console.log("შენახვა დაიწყო...");
       const name = document.getElementById('template-name-input').value.trim();
       const content = quill.root.innerHTML.trim();
-
       if (!name) {
         showMessage('შეიყვანეთ შაბლონის სახელი', 'error');
         return;
@@ -228,19 +237,19 @@
         showMessage('დანიშნულება ცარიელია', 'error');
         return;
       }
-
       try {
-        await addDoc(collection(db, "medical_templates"), {
+        const docRef = await addDoc(collection(db, "medical_templates"), {
           name: name,
           content: content,
           created_at: new Date().toISOString()
         });
+        console.log("შაბლონი შეინახა ID-ით:", docRef.id);
         hideSaveTemplateModal();
         await loadTemplates();
         showMessage('შაბლონი შეინახა', 'success');
       } catch (error) {
-        showMessage('შენახვა ვერ მოხერხდა', 'error');
         console.error("Error saving template:", error);
+        showMessage('შენახვა ვერ მოხერხდა: ' + error.message, 'error');
       }
     }
 
@@ -256,29 +265,49 @@
       }
     }
 
-    // === Templates Modal ===
+    // === Modals ===
     function openTemplatesModal() {
       renderTemplatesInModal();
-      document.getElementById('templates-modal').classList.remove('hidden');
-      document.getElementById('templates-modal').classList.add('flex');
+      const modal = document.getElementById('templates-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function closeTemplatesModal() {
-      document.getElementById('templates-modal').classList.add('hidden');
-      document.getElementById('templates-modal').classList.remove('flex');
+      const modal = document.getElementById('templates-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function showSaveTemplateModal() {
+      const content = quill.root.innerHTML.trim();
+      if (!content || content === '<p><br></p>') {
+        showMessage('დანიშნულების ველი ცარიელია', 'error');
+        return;
+      }
+      const modal = document.getElementById('save-template-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('template-name-input').value = '';
+      document.getElementById('template-name-input').focus();
+    }
+
+    function hideSaveTemplateModal() {
+      const modal = document.getElementById('save-template-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('template-name-input').value = '';
     }
 
     function renderTemplatesInModal() {
       const grid = document.getElementById('templates-grid');
       const noTemplates = document.getElementById('no-templates');
       grid.innerHTML = '';
-
       if (templates.length === 0) {
         noTemplates.classList.remove('hidden');
         return;
       }
       noTemplates.classList.add('hidden');
-
       templates.forEach(t => {
         const item = document.createElement('div');
         item.className = 'template-item bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
@@ -300,24 +329,6 @@
         item.querySelector('.delete-template').onclick = () => deleteTemplate(t.id);
         grid.appendChild(item);
       });
-    }
-
-    // === Save Template Modal ===
-    function showSaveTemplateModal() {
-      const content = quill.root.innerHTML.trim();
-      if (!content || content === '<p><br></p>') {
-        showMessage('დანიშნულების ველი ცარიელია', 'error');
-        return;
-      }
-      document.getElementById('save-template-modal').classList.remove('hidden');
-      document.getElementById('save-template-modal').classList.add('flex');
-      document.getElementById('template-name-input').focus();
-    }
-
-    function hideSaveTemplateModal() {
-      document.getElementById('save-template-modal').classList.add('hidden');
-      document.getElementById('save-template-modal').classList.remove('flex');
-      document.getElementById('template-name-input').value = '';
     }
 
     // === Other ===
