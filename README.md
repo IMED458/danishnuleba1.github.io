@@ -46,8 +46,6 @@
     .btn-primary:hover { background: var(--primary-dark); }
     .btn-success { background: var(--success); color: white; }
     .btn-success:hover { background: #059669; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-danger:hover { background: #dc2626; }
     .btn-secondary { background: #64748b; color: white; }
     .btn-secondary:hover { background: #475569; }
     .input-group {
@@ -124,38 +122,38 @@
       transform: translateY(-2px);
     }
 
-    /* ლოგო – მართკუთხედი, გაზრდილი */
+    /* ლოგო – პატარა ინტერფეისში */
     .logo-container {
-      width: 12rem;     /* 192px */
-      height: 8rem;     /* 128px */
-      margin: 0 auto 1.5rem;
-      border-radius: 1rem;
+      width: 9rem;
+      height: 6rem;
+      margin: 0 auto 1rem;
+      border-radius: 0.75rem;
       overflow: hidden;
-      border: 4px solid #dbeafe;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      border: 3px solid #dbeafe;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
       background: white;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .logo-container img {
-      max-width: 90%;
-      max-height: 90%;
+      max-width: 88%;
+      max-height: 88%;
       object-fit: contain;
     }
   </style>
 </head>
 <body class="min-h-screen">
   <div class="max-w-5xl mx-auto p-4 md:p-8">
-    <!-- Header Card -->
-    <div class="card p-6 md:p-8 text-center mb-8">
+    <!-- Header Card – პატარა ინტერფეისში -->
+    <div class="card p-4 md:p-6 text-center mb-6">
       <div class="logo-container">
         <img src="tm_center_logo.png" alt="TM Center">
       </div>
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight">
+      <h1 class="text-lg md:text-xl font-bold text-gray-800 leading-tight">
         თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
       </h1>
-      <h2 class="text-xl md:text-2xl font-bold text-blue-600 mt-3 flex items-center justify-center gap-2">
+      <h2 class="text-lg md:text-xl font-bold text-blue-600 mt-2 flex items-center justify-center gap-2">
         სამედიცინო დანიშნულება
       </h2>
     </div>
@@ -251,7 +249,6 @@
   <!-- Firebase + Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -260,12 +257,10 @@
       projectId: "danishnuleba1",
       storageBucket: "danishnuleba1.firebasestorage.app",
       messagingSenderId: "439396384140",
-      appId: "1:439396384140:web:a2c6327fb5e3f3035daaa9",
-      measurementId: "G-2PKPFKJLKQ"
+      appId: "1:439396384140:web:a2c6327fb5e3f3035daaa9"
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     let quill;
@@ -412,12 +407,12 @@
       quill.setContents([]);
     }
 
-    // === განახლებული ბეჭდვის ფუნქცია – ლოგო დიდი ===
+    // === ბეჭდვა – ლოგო დიდი ===
     function handlePrint() {
       const data = {
         patient: document.getElementById('patient-name').value || '-',
         history: document.getElementById('history-number').value || '-',
-        date: document.getElementById('date').value ? formatGeorgianDate(document.getElementById('date').value входят: '-',
+        date: document.getElementById('date').value ? formatGeorgianDate(document.getElementById('date').value) : '-',
         doctor: document.getElementById('doctor-name').value || '-',
         content: quill.root.innerHTML || '<p>-</p>'
       };
@@ -443,7 +438,7 @@
               margin-bottom: 1.8rem; 
             }
             .logo { 
-              width: 220px;      /* დიდი ლოგო ბეჭდვაში */
+              width: 220px; 
               height: 150px; 
               object-fit: contain; 
               margin-bottom: 0.8rem;
@@ -479,16 +474,13 @@
             }
             @media print { 
               body { margin: 1.2cm; } 
-              .logo { 
-                width: 200px; 
-                height: 135px; 
-              }
+              .logo { width: 200px; height: 135px; }
             }
           </style>
         </head>
         <body>
           <div class="header">
-            <img src="tm_center_logo.png" class="logo" alt="TM Center Logo">
+            <img src="tm_center_logo.png" class="logo" alt="Logo">
             <h1 style="font-size:15pt;margin:0.6rem 0;font-weight:bold;">
               თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
             </h1>
