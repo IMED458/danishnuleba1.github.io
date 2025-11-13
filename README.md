@@ -12,9 +12,9 @@
       font-family: 'BPG Nino Mtavruli', 'Sylfaen', 'DejaVu Sans', sans-serif;
     }
     .medical-logo {
-      width: 600px;   /* 150px × 4 = 600px */
-      height: 600px;  /* 150px × 4 = 600px */
-      margin: 0 auto 20px;
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 16px;
     }
     .ql-editor {
       min-height: 200px;
@@ -115,7 +115,7 @@
         </button>
       </div>
     </div>
-  </div vibe
+  </div>
 
   <!-- Save Template Modal -->
   <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 modal-backdrop">
@@ -346,24 +346,21 @@
           <meta charset="UTF-8">
           <title>დანიშნულება</title>
           <style>
-            body { font-family: 'BPG Nino Mtavruli', 'Sylfaen', sans-serif; margin: 0; padding: 30px; font-size: 12pt; line-height: 1.5; }
-            .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
-            .logo { width: 480px; height: 480px; margin: 0 auto 15px; object-fit: contain; } /* 120px × 4 = 480px */
-            .field { margin: 15px 0; }
-            .label { font-weight: bold; display: inline-block; width: 140px; }
-            .prescription { border: 1px solid #000; padding: 20px; margin: 25px 0; min-height: 200px; }
-            .signature { margin-top: 60px; text-align: right; }
-            @media print { 
-              body { margin: 0; padding: 20px; }
-              .logo { width: 450px; height: 450px; }
-            }
+            body { font-family: 'BPG Nino Mtavruli', 'Sylfaen', sans-serif; margin: 0; padding: 20px; font-size: 12pt; line-height: 1.5; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+            .logo { width: 120px; height: 120px; margin: 0 auto 10px; object-fit: contain; }
+            .field { margin: 12px 0; }
+            .label { font-weight: bold; display: inline-block; width: 120px; }
+            .prescription { border: 1px solid #000; padding: 15px; margin: 20px 0; min-height: 180px; }
+            .signature { margin-top: 50px; text-align: right; }
+            @media print { body { margin: 0; } }
           </style>
         </head>
         <body>
           <div class="header">
             <img src="tm_center_logo.png" class="logo" alt="TM Center Logo">
-            <h1 style="font-size: 16pt; margin: 10px 0;">${clinicName}</h1>
-            <h2 style="font-size: 18pt; font-weight: bold; margin: 8px 0;">${formTitle}</h2>
+            <h1 style="font-size: 14pt; margin: 8px 0;">${clinicName}</h1>
+            <h2 style="font-size: 16pt; font-weight: bold; margin: 5px 0;">${formTitle}</h2>
           </div>
           <div class="field"><span class="label">პაციენტი:</span> ${patientName}</div>
           <div class="field"><span class="label">ისტორიის №:</span> ${historyNumber}</div>
@@ -371,7 +368,7 @@
           <div class="prescription">${prescription}</div>
           <div class="signature">
             <p><strong>ექიმი:</strong> ${doctor}</p>
-            <p style="margin-top: 30px;">ხელმოწერა: _________________</p>
+            <p style="margin-top: 25px;">ხელმოწერა: _________________</p>
           </div>
         </body>
         </html>
@@ -382,7 +379,7 @@
         win.document.write(printContent);
         win.document.close();
         win.focus();
-        setTimeout(() => win.print(), 600);
+        setTimeout(() => win.print(), 500);
       } else {
         showMessage('ბეჭდვის ფანჯარა ვერ გაიხსნა', 'error');
       }
