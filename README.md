@@ -72,8 +72,6 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
-
-    /* Quill Editor */
     .ql-toolbar {
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
@@ -89,11 +87,10 @@
     .ql-editor {
       min-height: 220px;
       font-family: inherit;
-      line-height: 1.35 !important;
+      line-height: 1.2 !important;
       padding: 14px 16px;
       font-size: 15px;
     }
-
     .modal {
       backdrop-filter: blur(8px);
       background: rgba(0,0,0,0.4);
@@ -103,9 +100,9 @@
       top: 1rem;
       right: 1rem;
       z-index: 1000;
-      animation: slideIn 0.3s ease-out;
+      animation: slide1 0.3s ease-out;
     }
-    @keyframes slideIn {
+    @keyframes slide1 {
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
@@ -121,21 +118,16 @@
       border-color: var(--primary);
       transform: translateY(-2px);
     }
-
-    /* ლოგო – პატარა ინტერფეისში */
     .logo-container {
       width: 9rem;
       height: 6rem;
       margin: 0 auto 1rem;
-      border-radius: 0.75rem;
       overflow: hidden;
-      border: 3px solid #dbeafe;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
       background: white;
       display: flex;
       align-items: center;
       justify-content: center;
-   824}
+    }
     .logo-container img {
       max-width: 88%;
       max-height: 88%;
@@ -145,7 +137,6 @@
 </head>
 <body class="min-h-screen">
   <div class="max-w-5xl mx-auto p-4 md:p-8">
-    <!-- Header Card – პატარა ინტერფეისში -->
     <div class="card p-4 md:p-6 text-center mb-6">
       <div class="logo-container">
         <img src="tm_center_logo.png" alt="TM Center">
@@ -153,14 +144,11 @@
       <h1 class="text-lg md:text-xl font-bold text-gray-800 leading-tight">
         თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
       </h1>
-      <h2 class="text-lg md:text-xl font-bold text-blue-600 mt-2 flex items-center justify-center gap-2">
-        სამედიცინო დანიშნულება
-      </h2>
+      <h2 class="text-lg md:text-xl font-bold text-blue-600 mt-2">სამედიცინო დანიშნულება</h2>
     </div>
 
-    <!-- Main Form Card -->
     <div class="card p-6 md:p-8 mb-6">
-      <form id="prescription-form">
+      <form id="pres魚-form">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div class="input-group">
             <label>პაციენტი</label>
@@ -181,12 +169,8 @@
         </div>
 
         <div class="flex flex-wrap gap-3 mb-6">
-          <button type="button" id="open-templates-btn" class="btn btn-primary">
-            შაბლონები
-          </button>
-          <button type="button" id="save-template-btn" class="btn btn-success">
-            შაბლონის შენახვა
-          </button>
+          <button type="button" id="open-templates-btn" class="btn btn-primary">შაბლონები</button>
+          <button type="button" id="save-template-btn" class="btn btn-success">შაბლონის შენახვა</button>
         </div>
 
         <div class="mb-6">
@@ -194,13 +178,14 @@
           <div id="editor" style="height: 220px;"></div>
         </div>
 
+        <div class="mb-5 flex items-center">
+          <input type="checkbox" id="require-patient-signature" class="mr-2">
+          <label for="require-patient-signature" class="text-sm font-medium text-gray-700">პაციენტის ხელმოწერა</label>
+        </div>
+
         <div class="flex flex-wrap gap-3 justify-end">
-          <button type="button" id="clear-btn" class="btn btn-secondary">
-            გასუფთავება
-          </button>
-          <button type="button" id="print-btn" class="btn btn-primary text-lg font-semibold">
-            ბეჭდვა
-          </button>
+          <button type="button" id="clear-btn" class="btn btn-secondary">გასუფთავება</button>
+          <button type="button" id="print-btn" class="btn btn-primary text-lg font-semibold">ბეჭდვა</button>
         </div>
       </form>
     </div>
@@ -210,9 +195,7 @@
   <div id="templates-modal" class="fixed inset-0 modal hidden items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
       <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
-        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-          შაბლონები
-        </h3>
+        <h3 class="text-xl font-bold text-gray-800">შაბლონები</h3>
         <button id="close-templates-modal" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-white transition">
           <i class="fas fa-times text-xl"></i>
         </button>
@@ -222,9 +205,7 @@
         <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
       <div class="p-4 border-t border-gray-200 bg-gray-50 text-right">
-        <button id="close-templates-btn" class="btn btn-secondary">
-          დახურვა
-        </button>
+        <button id="close-templates-btn" class="btn btn-secondary">დახურვა</button>
       </div>
     </div>
   </div>
@@ -232,9 +213,7 @@
   <!-- Save Template Modal -->
   <div id="save-template-modal" class="fixed inset-0 modal hidden items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
-      <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        შაბლონის შენახვა
-      </h3>
+      <h3 class="text-xl font-bold text-gray-800 mb-4">შაბლონის შენახვა</h3>
       <div class="input-group mb-5">
         <label>შაბლონის სახელი</label>
         <input type="text" id="template-name-input" class="input-field w-full" placeholder="მაგ: ანტიბიოტიკები">
@@ -246,7 +225,6 @@
     </div>
   </div>
 
-  <!-- Firebase + Script (ავტორიზაცია ამოღებულია) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -259,10 +237,8 @@
       messagingSenderId: "439396384140",
       appId: "1:439396384140:web:a2c6327fb5e3f3035daaa9"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     let quill;
     let templates = [];
 
@@ -340,30 +316,26 @@
 
     function openTemplatesModal() {
       renderTemplatesInModal();
-      const modal = document.getElementById('templates-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      document.getElementById('templates-modal').classList.remove('hidden');
+      document.getElementById('templates-modal').classList.add('flex');
     }
 
     function closeTemplatesModal() {
-      const modal = document.getElementById('templates-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      document.getElementById('templates-modal').classList.add('hidden');
+      document.getElementById('templates-modal').classList.remove('flex');
     }
 
     function showSaveTemplateModal() {
       const content = quill.root.innerHTML.trim();
       if (!content || content === '<p><br></p>') return showToast('დანიშნულება ცარიელია', 'error');
-      const modal = document.getElementById('save-template-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      document.getElementById('save-template-modal').classList.remove('hidden');
+      document.getElementById('save-template-modal').classList.add('flex');
       document.getElementById('template-name-input').focus();
     }
 
     function hideSaveTemplateModal() {
-      const modal = document.getElementById('save-template-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      document.getElementById('save-template-modal').classList.add('hidden');
+      document.getElementById('save-template-modal').classList.remove('flex');
       document.getElementById('template-name-input').value = '';
     }
 
@@ -405,6 +377,7 @@
       ['patient-name', 'history-number', 'doctor-name'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
       quill.setContents([]);
+      document.getElementById('require-patient-signature').checked = false;
     }
 
     function handlePrint() {
@@ -415,89 +388,78 @@
         doctor: document.getElementById('doctor-name').value || '-',
         content: quill.root.innerHTML || '<p>-</p>'
       };
+      const requirePatientSig = document.getElementById('require-patient-signature').checked;
+
+      const patientSigHtml = requirePatientSig ? `
+        <div style="margin-top: 1.2rem; text-align: right; font-size: 12pt;">
+          <p style="margin:0;">გავეცანი, ჩავიბარე,</p>
+          <p style="margin-top: 0.4rem;">
+            პაციენტის ხელმოწერა: _________________
+          </p>
+        </div>` : '';
 
       const printWin = window.open('', '_blank');
       printWin.document.write(`
-        <!doctype html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>დანიშნულება</title>
-          <style>
-            @page { margin: 1.5cm 1.5cm 2cm 1.5cm; }
-            body { 
-              font-family: 'BPG Nino Mtavruli', sans-serif; 
-              font-size: 12pt; 
-              line-height: 1.35; 
-              margin: 0;
-            }
-            .header {
-              text-align: center;
-              margin-top: -1cm;
-              padding-bottom: 0.5rem;
-              border-bottom: 2px solid #000;
-            }
-            .logo {
-              width: 150px;
-              height: 100px;
-              object-fit: contain;
-              margin-bottom: 0.3rem;
-              border: 1px solid #ccc;
-              border-radius: 6px;
-              padding: 6px;
-              background: white;
-            }
-            .clinic-name {
-              font-size: 12pt;
-              font-weight: bold;
-              margin: 0.2rem 0;
-            }
-            .print-field {
-              display: flex;
-              gap: 1rem;
-              margin: 0.8rem 0;
-              font-size: 12pt;
-            }
-            .label {
-              font-weight: bold;
-              width: 120px;
-              flex-shrink: 0;
-            }
-            .prescription {
-              border: 1.5px solid #000;
-              padding: 1rem;
-              min-height: 200px;
-              margin: 1.5rem 0;
-              line-height: 1.35;
-              font-size: 12pt;
-              background: #fafafa;
-            }
-            .signature {
-              margin-top: 3rem;
-              text-align: right;
-              font-size: 12pt;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <img src="tm_center_logo.png" class="logo" alt="Logo">
-            <div class="clinic-name">
-              თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
-            </div>
-          </div>
-          <div class="print-field"><span class="label">პაციენტი:</span> ${data.patient}</div>
-          <div class="print-field"><span class="label">ისტორია №:</span> ${data.history}</div>
-          <div class="print-field"><span class="label">თარიღი:</span> ${data.date}</div>
-          <div class="prescription">${data.content}</div>
-          <div class="signature">
-            <p><strong>ექიმი:</strong> ${data.doctor}</p>
-            <p style="margin-top:2rem;border-top:1px solid #000;padding-top:0.5rem;display:inline-block;">
-              ხელმოწერა: _________________
-            </p>
-          </div>
-        </body>
-        </html>
+         <!doctype html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>დანიშნულება</title>
+    <style>
+      @page { margin: 1.5cm 1.5cm 2cm 1.5cm; }
+      body { font-family: 'BPG Nino Mtavruli', sans-serif; font-size: 12pt; line-height: 1.2; margin: 0; }
+      .header { text-align: center; margin-top: -1cm; padding-bottom: 0.5rem; border-bottom: 2px solid #000; }
+      .logo { width: 150px; height: 100px; object-fit: contain; margin-bottom: 0.3rem; }
+      .clinic-name { font-size: 12pt; font-weight: bold; margin: 0.2rem 0; }
+      .print-field { display: flex; gap: 1rem; margin: 0.8rem 0; font-size: 12pt; }
+      .label { font-weight: bold; width: 120px; flex-shrink: 0; }
+      .prescription {
+        border: 1.5px solid #000;
+        padding: 1rem;
+        min-height: 200px;
+        margin: 1.5rem 0;
+        line-height: 1.2;
+        font-size: 12pt;
+        background: #fafafa;
+      }
+      .signatures {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        font-size: 12pt;
+      }
+      .doctor-sign, .patient-sign { width: 48%; }
+      .doctor-sign { text-align: left; }
+      .patient-sign { text-align: right; }
+      .sign-line { margin-top: 0.4rem; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="tm_center_logo.png" class="logo" alt="Logo">
+      <div class="clinic-name">
+        თბილისის სახელმწიფო სამედიცინო უნივერსიტეტისა და ინგოროყვას მაღალი სამედიცინო ტექნოლოგიების საუნივერსიტეტო კლინიკა
+      </div>
+    </div>
+    <div class="print-field"><span class="label">პაციენტი:</span> ${data.patient}</div>
+    <div class="print-field"><span class="label">ისტორია №:</span> ${data.history}</div>
+    <div class="print-field"><span class="label">თარიღი:</span> ${data.date}</div>
+    <div class="prescription">${data.content}</div>
+
+    <div class="signatures">
+      <div class="doctor-sign">
+        <p style="margin:0;"><strong>ექიმი:</strong> ${data.doctor}</p>
+        <p class="sign-line">ხელმოწერა: _________________</p>
+      </div>
+      <div class="patient-sign">
+        ${requirePatientSig ? `
+        <p style="margin:0;">გავეცანი, ჩავიბარე,</p>
+        <p class="sign-line">პაციენტის ხელმოწერა: _________________</p>
+        ` : ''}
+      </div>
+    </div>
+  </body>
+  </html>
       `);
       printWin.document.close();
       setTimeout(() => printWin.print(), 600);
@@ -506,7 +468,7 @@
     function showToast(msg, type = 'success') {
       const toast = document.createElement('div');
       toast.className = `toast px-5 py-3 rounded-lg text-white font-medium shadow-lg flex items-center gap-2 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
-      toast.innerHTML = `${type === 'error' ? '<i class="fas fa-times-circle"></i>' : '<i class="fas fa-check-circle"></i>'} ${msg}`;
+      toast.innerHTML = `${type === 'error' ? 'გაფრთხილება' : 'წარმატებული'} ${msg}`;
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
     }
