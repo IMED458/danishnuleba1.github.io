@@ -74,6 +74,19 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
+    .input-field.lookup-loading {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+    }
+    .status-hint {
+      min-height: 1.25rem;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--gray);
+    }
+    .status-hint[data-state="loading"] { color: var(--primary); }
+    .status-hint[data-state="success"] { color: #059669; }
+    .status-hint[data-state="error"] { color: var(--danger); }
     .ql-toolbar {
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
@@ -159,6 +172,7 @@
           <div class="input-group">
             <label>ისტორიის №</label>
             <input type="text" id="history-number" class="input-field w-full" placeholder="2024-001234">
+            <p id="history-lookup-status" class="status-hint" aria-live="polite"></p>
           </div>
           <div class="input-group">
             <label>თარიღი</label>
@@ -243,6 +257,20 @@
     const db = getFirestore(app);
     let quill;
     let templates = [];
+    let historyLookupTimer = null;
+    let historyLookupRequestSeq = 0;
+    let lastAutoFilledPatientName = '';
+    const REGISTRATION_XLSX_IMPORT_URL = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm';
+    const REGISTRATION_SETTINGS = {
+      googleSheetsId: 'https://docs.google.com/spreadsheets/d/1zsuLPC1hDVJ1pzGMsk_LY1bILCF6Dbd7/edit?gid=226530235#gid=226530235',
+      sheetName: '',
+      columnMapping: {
+        firstName: 'C',
+        lastName: 'B',
+        historyNumber: 'F'
+      }
+    };
+    const registrationWorkbookSheetsPromiseByKey = new Map();
 
     function formatGeorgianDate(dateString) {
       if (!dateString) return '-';
@@ -251,6 +279,195 @@
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
+    }
+
+    function normalizeHistoryNumber(value) {
+      return String(value || '').trim().replace(/\.0+$/, '');
+    }
+
+    function normalizeSheetCellValue(value) {
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'number') {
+        return Number.isInteger(value) ? String(value) : String(value).replace(/\.0+$/, '');
+      }
+      return String(value).trim().replace(/\.0+$/, '');
+    }
+
+    function extractSpreadsheetId(value) {
+      const trimmedValue = String(value || '').trim();
+      const match = trimmedValue.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : trimmedValue;
+    }
+
+    function columnLetterToIndex(columnName) {
+      const normalizedColumnName = String(columnName || '').trim().toUpperCase();
+      if (!/^[A-Z]+$/.test(normalizedColumnName)) return -1;
+
+      let index = 0;
+      for (const character of normalizedColumnName) {
+        index = index * 26 + (character.charCodeAt(0) - 64);
+      }
+      return index - 1;
+    }
+
+    function prioritizeSheetNames(sheetNames, preferredSheetName) {
+      const normalizedPreferredSheetName = String(preferredSheetName || '').trim();
+      if (!normalizedPreferredSheetName || !sheetNames.includes(normalizedPreferredSheetName)) {
+        return sheetNames;
+      }
+      return [
+        normalizedPreferredSheetName,
+        ...sheetNames.filter(sheetName => sheetName !== normalizedPreferredSheetName)
+      ];
+    }
+
+    function setHistoryLookupStatus(message = '', state = '') {
+      const statusEl = document.getElementById('history-lookup-status');
+      const historyInput = document.getElementById('history-number');
+      if (!statusEl || !historyInput) return;
+      statusEl.textContent = message;
+      statusEl.dataset.state = state || '';
+      historyInput.classList.toggle('lookup-loading', state === 'loading');
+    }
+
+    async function fetchRegistrationWorkbookSheets(settings) {
+      const spreadsheetId = extractSpreadsheetId(settings.googleSheetsId);
+      if (!spreadsheetId) return [];
+
+      const preferredSheetName = String(settings.sheetName || '').trim();
+      const cacheKey = `${spreadsheetId}::${preferredSheetName || '*'}`;
+      let workbookSheetsPromise = registrationWorkbookSheetsPromiseByKey.get(cacheKey);
+
+      if (!workbookSheetsPromise) {
+        workbookSheetsPromise = (async () => {
+          const workbookUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+          const response = await fetch(workbookUrl, { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(`Workbook fetch failed with status ${response.status}`);
+          }
+
+          const buffer = await response.arrayBuffer();
+          const XLSX = await import(REGISTRATION_XLSX_IMPORT_URL);
+          const workbook = XLSX.read(buffer, { type: 'array' });
+          const orderedSheetNames = prioritizeSheetNames(workbook.SheetNames, preferredSheetName);
+
+          return orderedSheetNames.map(sheetName => ({
+            sheetName,
+            rows: XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+              header: 1,
+              defval: '',
+              raw: false
+            })
+          }));
+        })().catch(error => {
+          registrationWorkbookSheetsPromiseByKey.delete(cacheKey);
+          throw error;
+        });
+
+        registrationWorkbookSheetsPromiseByKey.set(cacheKey, workbookSheetsPromise);
+      }
+
+      return workbookSheetsPromise;
+    }
+
+    function mapRegistryPatientFromRows(rows, settings, historyNumber) {
+      if (!Array.isArray(rows) || !rows.length) return null;
+
+      const firstNameIndex = columnLetterToIndex(settings.columnMapping.firstName || 'C');
+      const lastNameIndex = columnLetterToIndex(settings.columnMapping.lastName || 'B');
+      const historyNumberIndex = columnLetterToIndex(settings.columnMapping.historyNumber || 'F');
+      const normalizedTargetHistoryNumber = normalizeHistoryNumber(historyNumber);
+      if (!normalizedTargetHistoryNumber) return null;
+
+      const row = rows.find(currentRow => {
+        const rowHistoryNumber = normalizeSheetCellValue(currentRow?.[historyNumberIndex]);
+        return rowHistoryNumber === normalizedTargetHistoryNumber;
+      });
+      if (!row) return null;
+
+      return {
+        firstName: normalizeSheetCellValue(row[firstNameIndex]),
+        lastName: normalizeSheetCellValue(row[lastNameIndex]),
+        historyNumber: normalizeSheetCellValue(row[historyNumberIndex])
+      };
+    }
+
+    async function lookupRegistryPatientByHistory(historyNumber) {
+      const normalizedHistoryNumber = normalizeHistoryNumber(historyNumber);
+      if (!normalizedHistoryNumber) return null;
+
+      const workbookSheets = await fetchRegistrationWorkbookSheets(REGISTRATION_SETTINGS);
+      for (const sheet of workbookSheets) {
+        const patient = mapRegistryPatientFromRows(sheet.rows, REGISTRATION_SETTINGS, normalizedHistoryNumber);
+        if (patient) return patient;
+      }
+      return null;
+    }
+
+    function buildRegistryPatientName(patient) {
+      return [patient?.firstName, patient?.lastName]
+        .map(value => String(value || '').trim())
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    function clearAutoFilledPatientName() {
+      const patientNameInput = document.getElementById('patient-name');
+      if (!patientNameInput) return;
+      if (lastAutoFilledPatientName && patientNameInput.value.trim() === lastAutoFilledPatientName) {
+        patientNameInput.value = '';
+      }
+      lastAutoFilledPatientName = '';
+    }
+
+    function applyRegistryPatientIdentity(patient) {
+      const patientNameInput = document.getElementById('patient-name');
+      if (!patientNameInput) return;
+
+      const fullName = buildRegistryPatientName(patient);
+      if (!fullName) return;
+
+      patientNameInput.value = fullName;
+      lastAutoFilledPatientName = fullName;
+    }
+
+    async function hydratePatientIdentityByHistory(historyNumber) {
+      const normalizedHistoryNumber = normalizeHistoryNumber(historyNumber);
+      const lookupSeq = ++historyLookupRequestSeq;
+
+      if (!normalizedHistoryNumber) {
+        clearAutoFilledPatientName();
+        setHistoryLookupStatus('', '');
+        return false;
+      }
+
+      setHistoryLookupStatus('პაციენტს ვეძებ ცხრილში...', 'loading');
+
+      try {
+        const patient = await lookupRegistryPatientByHistory(normalizedHistoryNumber);
+        if (lookupSeq !== historyLookupRequestSeq) return false;
+
+        if (!patient) {
+          clearAutoFilledPatientName();
+          setHistoryLookupStatus('ასეთი ისტორიის ნომერი ვერ მოიძებნა.', 'error');
+          return false;
+        }
+
+        applyRegistryPatientIdentity(patient);
+        setHistoryLookupStatus(`ნაპოვნია: ${buildRegistryPatientName(patient)}`, 'success');
+        return true;
+      } catch (error) {
+        console.warn('Google Sheets lookup failed:', error);
+        setHistoryLookupStatus('Google Sheets-იდან მონაცემის წამოღება ვერ მოხერხდა.', 'error');
+        return false;
+      }
+    }
+
+    function scheduleHistoryLookup(immediate = false) {
+      if (historyLookupTimer) clearTimeout(historyLookupTimer);
+      historyLookupTimer = setTimeout(() => {
+        hydratePatientIdentityByHistory(document.getElementById('history-number')?.value || '');
+      }, immediate ? 0 : 320);
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -262,9 +479,11 @@
       });
       setupEventListeners();
       await loadTemplates();
+      scheduleHistoryLookup(true);
     });
 
     function setupEventListeners() {
+      const historyNumberInput = document.getElementById('history-number');
       document.getElementById('print-btn').addEventListener('click', handlePrint);
       document.getElementById('clear-btn').addEventListener('click', handleClear);
       document.getElementById('save-template-btn').addEventListener('click', showSaveTemplateModal);
@@ -275,6 +494,8 @@
       document.getElementById('close-templates-btn').addEventListener('click', closeTemplatesModal);
       document.getElementById('templates-modal').addEventListener('click', e => e.target.id === 'templates-modal' && closeTemplatesModal());
       document.getElementById('save-template-modal').addEventListener('click', e => e.target.id === 'save-template-modal' && hideSaveTemplateModal());
+      historyNumberInput.addEventListener('input', () => scheduleHistoryLookup(false));
+      historyNumberInput.addEventListener('blur', () => scheduleHistoryLookup(true));
     }
 
     async function loadTemplates() {
@@ -376,10 +597,14 @@
     }
 
     function handleClear() {
+      if (historyLookupTimer) clearTimeout(historyLookupTimer);
+      historyLookupRequestSeq += 1;
+      lastAutoFilledPatientName = '';
       ['patient-name', 'history-number', 'doctor-name'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('date').value = new Date().toISOString().split('T')[0];
       quill.setContents([]);
       document.getElementById('require-patient-signature').checked = false;
+      setHistoryLookupStatus('', '');
     }
 
     function handlePrint() {
